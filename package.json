@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-variables-substitution",
+	"name": "obsidian-variables",
 	"version": "0.0.1",
 	"description": "This is a plugin that allows using features like environment variables in Obsidian.",
 	"main": "main.js",
