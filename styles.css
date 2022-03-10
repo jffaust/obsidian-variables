@@ -1,1 +1,12 @@
-/* Sets all the text color to red! */
+div.setting-item.plugin-vars-header input {
+    margin-right: 10px;
+}
+
+div.setting-item.plugin-vars-header div.setting-item-name {
+    font-weight: bold;
+}
+
+div.setting-item.plugin-vars-list input {
+    margin-right: 5px;
+    margin-left: 5px;
+}

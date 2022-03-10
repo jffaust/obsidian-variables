@@ -1,39 +1,41 @@
 import { Emoji } from 'Emoji';
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, debounce, Editor, FileSystemAdapter, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
-	mySetting: string;
+interface VarConfig {
+	vaultPath: "*" | string;
+	name: string;
+	value: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+interface VariablesPluginSettings {
+	variables: VarConfig[];
+	filter: string;
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+const DEFAULT_SETTINGS: VariablesPluginSettings = {
+	variables: [{
+		vaultPath: "*",
+		name: "demo",
+		value: "swapped"
+	}],
+	filter: ""
+}
+
+export default class VariablesPlugin extends Plugin {
+	settings: VariablesPluginSettings;
 
 	async onload() {
 		await this.loadSettings();
 
 		this.registerMarkdownPostProcessor((element, context) => {
 			console.log(element.innerHTML.replace("$(MEDIA)", "/home/jffaust/"));
-			element.innerHTML = element.innerHTML.replace("$(MEDIA)", "/home/jffaust/");
+			element.innerHTML = element.innerHTML.replace("$(MEDIA)", "home/jffaust/Pictures");
 
-			// const codeblocks = element.querySelectorAll("code");
-
-			// for (let index = 0; index < codeblocks.length; index++) {
-			// 	const codeblock = codeblocks.item(index);
-			// 	const text = codeblock.innerText.trim();
-			// 	const isEmoji = text[0] === ":" && text[text.length - 1] === ":";
-
-			// 	if (isEmoji) {
-			// 		context.addChild(new Emoji(codeblock, text));
-			// 	}
-			// }
 		});
 
+		this.addSettingTab(new SampleSettingTab(this.app, this));
 	}
 
 	onunload() {
@@ -49,26 +51,19 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
+function getVaultAbsolutePath(app: App) {
+	let adapter = app.vault.adapter;
+	if (adapter instanceof FileSystemAdapter) {
+		return adapter.getBasePath();
 	}
-
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
+	return null;
 }
 
 class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: VariablesPlugin;
+	debouncedRefresh = debounce(this.display, 700, true);
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: VariablesPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -78,18 +73,86 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Settings for my awesome plugin.' });
+		console.log(`Vault abs path: ${getVaultAbsolutePath(this.app)}`);
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setClass("plugin-vars-header")
+			.setName(`Variables`)
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('Filter by variable name')
+				.setValue(this.plugin.settings.filter)
 				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.filter = value;
+					console.log('Filter updated:' + value);
 					await this.plugin.saveSettings();
-				}));
+					console.log('Settings saved');
+					this.debouncedRefresh();
+					console.log('debounced refresh');
+				}))
+			.addButton(btn => btn
+				.setTooltip("Copy current vault path")
+				.setIcon("vault")
+				.onClick(() => {
+					navigator.clipboard.writeText(getVaultAbsolutePath(this.app));
+				})
+			)
+			.addButton(btn => btn
+				.setTooltip("Add a new variable")
+				.setIcon("import-glyph")
+				.onClick(() => {
+					this.plugin.settings.variables.push({
+						vaultPath: "",
+						name: "",
+						value: ""
+					});
+					this.display();
+				})
+			);
+
+		for (let i = 0; i < this.plugin.settings.variables.length; i++) {
+			const variable = this.plugin.settings.variables[i];
+
+			if (this.plugin.settings.filter && !variable.name.includes(this.plugin.settings.filter)) {
+				continue;
+			}
+
+			new Setting(containerEl)
+				.setClass("plugin-vars-list")
+				.setName(`Variable`)
+				.addText(text => text
+					.setPlaceholder('vault path')
+					.setValue(this.plugin.settings.variables[i].vaultPath)
+					.onChange(async (value) => {
+						console.log('Updated var vault path: ' + value);
+						this.plugin.settings.variables[i].vaultPath = value;
+						await this.plugin.saveSettings();
+					}))
+				.addText(text => text
+					.setPlaceholder('name')
+					.setValue(this.plugin.settings.variables[i].name)
+					.onChange(async (value) => {
+						console.log('Updated var name: ' + value);
+						this.plugin.settings.variables[i].name = value;
+						await this.plugin.saveSettings();
+					}))
+				.addText(text => text
+					.setPlaceholder('value')
+					.setValue(this.plugin.settings.variables[i].value)
+					.onChange(async (value) => {
+						console.log('Updated var value: ' + value);
+						this.plugin.settings.variables[i].value = value;
+						await this.plugin.saveSettings();
+					}))
+				.addExtraButton(btn => btn
+					.setIcon("cross-in-box")
+					.setTooltip("Delete this variable")
+					.onClick(() => {
+						this.plugin.settings.variables.splice(i, 1);
+						this.display();
+					})
+				);
+
+		}
+
 	}
 }
