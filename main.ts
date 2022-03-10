@@ -12,6 +12,7 @@ interface VarConfig {
 interface VariablesPluginSettings {
 	variables: VarConfig[];
 	filter: string;
+	pinApplicableVars: boolean;
 }
 
 const DEFAULT_SETTINGS: VariablesPluginSettings = {
@@ -20,7 +21,8 @@ const DEFAULT_SETTINGS: VariablesPluginSettings = {
 		name: "demo",
 		value: "swapped"
 	}],
-	filter: ""
+	filter: "",
+	pinApplicableVars: false
 }
 
 export default class VariablesPlugin extends Plugin {
@@ -73,11 +75,12 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		console.log(`Vault abs path: ${getVaultAbsolutePath(this.app)}`);
+		let pinTooltip = this.plugin.settings.pinApplicableVars ? "Show all variables" : "Only show variables that apply to this vault";
+		let pinIcon = this.plugin.settings.pinApplicableVars ? "filled-pin" : "pin";
 
 		new Setting(containerEl)
 			.setClass("plugin-vars-header")
-			.setName(`Variables`)
+			.setName("Variables")
 			.addText(text => text
 				.setPlaceholder('Filter by variable name')
 				.setValue(this.plugin.settings.filter)
@@ -90,10 +93,25 @@ class SampleSettingTab extends PluginSettingTab {
 					console.log('debounced refresh');
 				}))
 			.addButton(btn => btn
+				.setTooltip("Open documentation on GitHub")
+				.setIcon("help")
+				.onClick(() => {
+					window.open("https://github.com/jffaust/obsidian-variables", '_blank');
+				})
+			)
+			.addButton(btn => btn
 				.setTooltip("Copy current vault path")
 				.setIcon("vault")
 				.onClick(() => {
 					navigator.clipboard.writeText(getVaultAbsolutePath(this.app));
+				})
+			)
+			.addButton(btn => btn
+				.setTooltip(pinTooltip)
+				.setIcon(pinIcon)
+				.onClick(() => {
+					this.plugin.settings.pinApplicableVars = !this.plugin.settings.pinApplicableVars;
+					this.display();
 				})
 			)
 			.addButton(btn => btn
@@ -112,7 +130,8 @@ class SampleSettingTab extends PluginSettingTab {
 		for (let i = 0; i < this.plugin.settings.variables.length; i++) {
 			const variable = this.plugin.settings.variables[i];
 
-			if (this.plugin.settings.filter && !variable.name.includes(this.plugin.settings.filter)) {
+			if (this.plugin.settings.filter && !variable.name.includes(this.plugin.settings.filter)
+				|| (this.plugin.settings.pinApplicableVars && variable.vaultPath != "*" && variable.vaultPath != getVaultAbsolutePath(this.app))) {
 				continue;
 			}
 

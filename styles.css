@@ -4,6 +4,7 @@ div.setting-item.plugin-vars-header input {
 
 div.setting-item.plugin-vars-header div.setting-item-name {
     font-weight: bold;
+    font-size: x-large;
 }
 
 div.setting-item.plugin-vars-list input {
