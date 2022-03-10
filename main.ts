@@ -1,4 +1,3 @@
-import { Emoji } from 'Emoji';
 import { App, debounce, Editor, FileSystemAdapter, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
@@ -32,9 +31,15 @@ export default class VariablesPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.registerMarkdownPostProcessor((element, context) => {
-			console.log(element.innerHTML.replace("$(MEDIA)", "/home/jffaust/"));
-			element.innerHTML = element.innerHTML.replace("$(MEDIA)", "home/jffaust/Pictures");
+			for (let i = 0; i < this.settings.variables.length; i++) {
+				const variable = this.settings.variables[i];
 
+				if (variable.name == "" || variable.vaultPath != "*" && variable.vaultPath != getVaultAbsolutePath(this.app)) {
+					continue;
+				}
+
+				element.innerHTML = element.innerHTML.replace(`$(${variable.name})`, variable.value);
+			}
 		});
 
 		this.addSettingTab(new SampleSettingTab(this.app, this));
