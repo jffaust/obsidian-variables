@@ -11,7 +11,7 @@ interface VarConfig {
 interface VariablesPluginSettings {
 	variables: VarConfig[];
 	filter: string;
-	pinApplicableVars: boolean;
+	showApplicableVars: boolean;
 }
 
 const DEFAULT_SETTINGS: VariablesPluginSettings = {
@@ -21,7 +21,7 @@ const DEFAULT_SETTINGS: VariablesPluginSettings = {
 		value: "swapped"
 	}],
 	filter: "",
-	pinApplicableVars: false
+	showApplicableVars: false
 }
 
 export default class VariablesPlugin extends Plugin {
@@ -80,8 +80,7 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		let pinTooltip = this.plugin.settings.pinApplicableVars ? "Show all variables" : "Only show variables that apply to this vault";
-		let pinIcon = this.plugin.settings.pinApplicableVars ? "filled-pin" : "pin";
+		let pinIcon = this.plugin.settings.showApplicableVars ? "check-in-circle" : "check-small";
 
 		new Setting(containerEl)
 			.setClass("plugin-vars-header")
@@ -112,10 +111,10 @@ class SampleSettingTab extends PluginSettingTab {
 				})
 			)
 			.addButton(btn => btn
-				.setTooltip(pinTooltip)
+				.setTooltip("Toggle between showing all variables or only the ones that apply to the current vault")
 				.setIcon(pinIcon)
 				.onClick(() => {
-					this.plugin.settings.pinApplicableVars = !this.plugin.settings.pinApplicableVars;
+					this.plugin.settings.showApplicableVars = !this.plugin.settings.showApplicableVars;
 					this.display();
 				})
 			)
@@ -136,7 +135,7 @@ class SampleSettingTab extends PluginSettingTab {
 			const variable = this.plugin.settings.variables[i];
 
 			if (this.plugin.settings.filter && !variable.name.includes(this.plugin.settings.filter)
-				|| (this.plugin.settings.pinApplicableVars && variable.vaultPath != "*" && variable.vaultPath != getVaultAbsolutePath(this.app))) {
+				|| (this.plugin.settings.showApplicableVars && variable.vaultPath != "*" && variable.vaultPath != getVaultAbsolutePath(this.app))) {
 				continue;
 			}
 

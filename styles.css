@@ -7,7 +7,20 @@ div.setting-item.plugin-vars-header div.setting-item-name {
     font-size: x-large;
 }
 
+div.setting-item.plugin-vars-header div.setting-item-control button svg {
+    width: 16px;
+    height: 16px;
+}
+
 div.setting-item.plugin-vars-list input {
     margin-right: 5px;
     margin-left: 5px;
+}
+
+div.setting-item.plugin-vars-list div.setting-item-info {
+    flex: none;
+}
+
+div.setting-item.plugin-vars-list div.setting-item-control input {
+    flex: 1 1 auto;
 }
