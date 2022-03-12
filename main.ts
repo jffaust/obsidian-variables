@@ -12,6 +12,7 @@ interface VariablesPluginSettings {
 	variables: VarConfig[];
 	filter: string;
 	showApplicableVars: boolean;
+	applicableVarIndexes: number[];
 }
 
 const DEFAULT_SETTINGS: VariablesPluginSettings = {
@@ -21,7 +22,8 @@ const DEFAULT_SETTINGS: VariablesPluginSettings = {
 		value: "swapped"
 	}],
 	filter: "",
-	showApplicableVars: false
+	showApplicableVars: false,
+	applicableVarIndexes: [0]
 }
 
 export default class VariablesPlugin extends Plugin {
@@ -31,13 +33,9 @@ export default class VariablesPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.registerMarkdownPostProcessor((element, context) => {
-			for (let i = 0; i < this.settings.variables.length; i++) {
-				const variable = this.settings.variables[i];
+			for (let i = 0; i < this.settings.applicableVarIndexes.length; i++) {
 
-				if (variable.name == "" || variable.vaultPath != "*" && variable.vaultPath != getVaultAbsolutePath(this.app)) {
-					continue;
-				}
-
+				const variable = this.settings.variables[this.settings.applicableVarIndexes[i]];
 				element.innerHTML = element.innerHTML.replace(`$(${variable.name})`, variable.value);
 			}
 		});
@@ -68,7 +66,7 @@ function getVaultAbsolutePath(app: App) {
 
 class SampleSettingTab extends PluginSettingTab {
 	plugin: VariablesPlugin;
-	debouncedRefresh = debounce(this.display, 700, true);
+	debouncedRefresh = debounce(() => { this.display(); document.getElementById("plugin-vars-filter-input").focus(); }, 700, true);
 
 	constructor(app: App, plugin: VariablesPlugin) {
 		super(app, plugin);
@@ -90,12 +88,9 @@ class SampleSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.filter)
 				.onChange(async (value) => {
 					this.plugin.settings.filter = value;
-					console.log('Filter updated:' + value);
 					await this.plugin.saveSettings();
-					console.log('Settings saved');
 					this.debouncedRefresh();
-					console.log('debounced refresh');
-				}))
+				}).inputEl.id = "plugin-vars-filter-input")
 			.addButton(btn => btn
 				.setTooltip("Open documentation on GitHub")
 				.setIcon("help")
@@ -134,8 +129,11 @@ class SampleSettingTab extends PluginSettingTab {
 		for (let i = 0; i < this.plugin.settings.variables.length; i++) {
 			const variable = this.plugin.settings.variables[i];
 
-			if (this.plugin.settings.filter && !variable.name.includes(this.plugin.settings.filter)
-				|| (this.plugin.settings.showApplicableVars && variable.vaultPath != "*" && variable.vaultPath != getVaultAbsolutePath(this.app))) {
+			if (this.plugin.settings.filter && !variable.name.includes(this.plugin.settings.filter)) {
+				continue;
+			}
+
+			if (this.plugin.settings.showApplicableVars && !this.plugin.settings.applicableVarIndexes.contains(i)) {
 				continue;
 			}
 
@@ -148,6 +146,7 @@ class SampleSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						console.log('Updated var vault path: ' + value);
 						this.plugin.settings.variables[i].vaultPath = value;
+						this.updateApplicableVars();
 						await this.plugin.saveSettings();
 					}))
 				.addText(text => text
@@ -156,6 +155,7 @@ class SampleSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						console.log('Updated var name: ' + value);
 						this.plugin.settings.variables[i].name = value;
+						this.updateApplicableVars();
 						await this.plugin.saveSettings();
 					}))
 				.addText(text => text
@@ -177,5 +177,28 @@ class SampleSettingTab extends PluginSettingTab {
 
 		}
 
+	}
+
+	updateApplicableVars(): void {
+		let newIndexesMap: { [key: string]: number } = {};
+		for (let i = 0; i < this.plugin.settings.variables.length; i++) {
+			let v = this.plugin.settings.variables[i];
+
+			if (v.name && v.vaultPath) {
+				if (newIndexesMap[v.name] == undefined) {
+					if (v.vaultPath == "*" || v.vaultPath == getVaultAbsolutePath(this.app)) {
+						newIndexesMap[v.name] = i;
+					}
+				} else {
+
+					let currentVar = this.plugin.settings.variables[newIndexesMap[v.name]];
+					if (currentVar.vaultPath == "*" && v.vaultPath == getVaultAbsolutePath(this.app)) {
+						newIndexesMap[v.name] = i;
+					}
+				}
+			}
+		}
+
+		this.plugin.settings.applicableVarIndexes = Object.values(newIndexesMap);
 	}
 }
