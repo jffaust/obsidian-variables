@@ -1,27 +1,25 @@
-import { App, debounce, Editor, FileSystemAdapter, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
-// Remember to rename these classes and interfaces!
+import { App, debounce, FileSystemAdapter, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface VarConfig {
-	vaultPath: "*" | string;
+	vaultPath: string;
 	name: string;
 	value: string;
 }
 
 interface VariablesPluginSettings {
-	variables: VarConfig[];
 	filter: string;
+	variables: VarConfig[];
 	showApplicableVars: boolean;
 	applicableVarIndexes: number[];
 }
 
 const DEFAULT_SETTINGS: VariablesPluginSettings = {
+	filter: "",
 	variables: [{
 		vaultPath: "*",
 		name: "demo",
 		value: "swapped"
 	}],
-	filter: "",
 	showApplicableVars: false,
 	applicableVarIndexes: [0]
 }
@@ -40,7 +38,7 @@ export default class VariablesPlugin extends Plugin {
 			}
 		});
 
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new VariablesSettingTab(this.app, this));
 	}
 
 	onunload() {
@@ -64,7 +62,7 @@ function getVaultAbsolutePath(app: App) {
 	return null;
 }
 
-class SampleSettingTab extends PluginSettingTab {
+class VariablesSettingTab extends PluginSettingTab {
 	plugin: VariablesPlugin;
 	debouncedRefresh = debounce(() => { this.display(); document.getElementById("plugin-vars-filter-input").focus(); }, 700, true);
 
