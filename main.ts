@@ -36,7 +36,7 @@ export default class VariablesPlugin extends Plugin {
 			for (let i = 0; i < this.settings.applicableVarIndexes.length; i++) {
 
 				const variable = this.settings.variables[this.settings.applicableVarIndexes[i]];
-				element.innerHTML = element.innerHTML.replaceAll(`$(${variable.name})`, variable.value);
+				element.innerHTML = element.innerHTML.replaceAll(variable.name, variable.value);
 			}
 		});
 
