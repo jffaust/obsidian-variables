@@ -169,6 +169,7 @@ class VariablesSettingTab extends PluginSettingTab {
 					.setTooltip("Delete this variable")
 					.onClick(() => {
 						this.plugin.settings.variables.splice(i, 1);
+						this.updateApplicableVars();
 						this.display();
 					})
 				);
