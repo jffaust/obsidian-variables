@@ -1,3 +1,5 @@
+import { ViewPlugin } from '@codemirror/view';
+import { LivePreviewExtension } from 'LivePreviewExtension';
 import { App, debounce, FileSystemAdapter, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface VarConfig {
@@ -38,6 +40,8 @@ export default class VariablesPlugin extends Plugin {
 				element.innerHTML = element.innerHTML.replaceAll(variable.name, variable.value);
 			}
 		});
+
+		this.registerEditorExtension(ViewPlugin.fromClass(LivePreviewExtension));
 
 		this.addSettingTab(new VariablesSettingTab(this.app, this));
 	}
