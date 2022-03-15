@@ -31,6 +31,7 @@ export default class VariablesPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.registerMarkdownPostProcessor((element, context) => {
+			console.log("Running MPP for element:" + element.getText())
 			for (let i = 0; i < this.settings.applicableVarIndexes.length; i++) {
 
 				const variable = this.settings.variables[this.settings.applicableVarIndexes[i]];

@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-variables",
-	"version": "0.1.0",
-	"description": "This is a plugin that allows using features like environment variables in Obsidian.",
+	"version": "0.1.1",
+	"description": "Plugin that adds support for variables in Obsidian.md",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
