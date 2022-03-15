@@ -55,11 +55,7 @@ export default class VariablesPlugin extends Plugin {
 }
 
 function getVaultAbsolutePath(app: App) {
-	let adapter = app.vault.adapter;
-	if (adapter instanceof FileSystemAdapter) {
-		return adapter.getBasePath();
-	}
-	return null;
+	return (this.app.vault.adapter as any).basePath;
 }
 
 class VariablesSettingTab extends PluginSettingTab {
@@ -142,7 +138,6 @@ class VariablesSettingTab extends PluginSettingTab {
 					.setPlaceholder('vault path')
 					.setValue(this.plugin.settings.variables[i].vaultPath)
 					.onChange(async (value) => {
-						console.log('Updated var vault path: ' + value);
 						this.plugin.settings.variables[i].vaultPath = value;
 						this.updateApplicableVars();
 						await this.plugin.saveSettings();
@@ -151,7 +146,6 @@ class VariablesSettingTab extends PluginSettingTab {
 					.setPlaceholder('name')
 					.setValue(this.plugin.settings.variables[i].name)
 					.onChange(async (value) => {
-						console.log('Updated var name: ' + value);
 						this.plugin.settings.variables[i].name = value;
 						this.updateApplicableVars();
 						await this.plugin.saveSettings();
@@ -160,7 +154,6 @@ class VariablesSettingTab extends PluginSettingTab {
 					.setPlaceholder('value')
 					.setValue(this.plugin.settings.variables[i].value)
 					.onChange(async (value) => {
-						console.log('Updated var value: ' + value);
 						this.plugin.settings.variables[i].value = value;
 						await this.plugin.saveSettings();
 					}))
@@ -173,9 +166,7 @@ class VariablesSettingTab extends PluginSettingTab {
 						this.display();
 					})
 				);
-
 		}
-
 	}
 
 	updateApplicableVars(): void {
