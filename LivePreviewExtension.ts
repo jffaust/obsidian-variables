@@ -1,4 +1,4 @@
-import { EditorView, PluginValue } from '@codemirror/view';
+import { EditorView, PluginValue, ViewUpdate } from '@codemirror/view';
 import { Notice } from 'obsidian';
 
 export class LivePreviewExtension implements PluginValue {
@@ -6,20 +6,12 @@ export class LivePreviewExtension implements PluginValue {
 
     constructor(view: EditorView) {
         this.view = view;
-
-        this.handleClickEvent = this.handleClickEvent.bind(this);
-        this.view.dom.addEventListener('click', this.handleClickEvent);
     }
 
     public destroy(): void {
-        this.view.dom.removeEventListener('click', this.handleClickEvent);
     }
 
-    private handleClickEvent(event: MouseEvent): boolean {
-        const { target } = event;
-
-        new Notice("CM click!");
-
-        return true;
+    public update(_update: ViewUpdate): void {
+        console.log(_update.changes.toJSON());
     }
 }
