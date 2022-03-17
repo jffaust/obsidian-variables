@@ -1,3 +1,4 @@
+import { activeVisualLine } from './LivePreviewExtension';
 import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface VarConfig {
@@ -38,8 +39,9 @@ export default class VariablesPlugin extends Plugin {
 			}
 		});
 
+		console.log("onload fdsfd test");
 
-		//this.registerEditorExtension(zebraStripes({ step: 3 }));
+		this.registerEditorExtension(activeVisualLine);
 
 		this.addSettingTab(new VariablesSettingTab(this.app, this));
 	}
