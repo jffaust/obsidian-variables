@@ -63,28 +63,23 @@ import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetTy
 //     decorations: v => v.decorations
 // });
 
-// class VarWidget extends WidgetType {
-//     constructor(readonly value: string) { super() }
+class VarWidget extends WidgetType {
+    constructor(readonly value: string) { super() }
 
-//     eq(other: VarWidget) { return other.value == this.value }
+    eq(other: VarWidget) { return other.value == this.value }
 
-//     toDOM() {
-//         let wrap = document.createTextNode("test");
-//         wrap.setAttribute("aria-hidden", "true")
-//         wrap.className = "cm-boolean-toggle"
-//         let box = wrap.appendChild(document.createElement("input"))
-//         box.type = "checkbox"
-//         box.checked = this.checked
-//         return wrap
-//     }
+    toDOM() {
+        let wrap = document.createElement("span");
+        wrap.innerHTML = this.value;
+        return wrap
+    }
 
-//     ignoreEvent() { return false }
-// }
+    ignoreEvent() { return false }
+}
 
 export const activeVisualLine = ViewPlugin.fromClass(
     class {
         decorations: DecorationSet = new RangeSetBuilder<Decoration>().finish();
-        updated: boolean = false;
 
         constructor(view: EditorView) {
 
@@ -93,20 +88,21 @@ export const activeVisualLine = ViewPlugin.fromClass(
         update(update: ViewUpdate) {
             console.log("update()")
 
-            let currentDoc = update.view.state.doc.toString();
+            let widgets = []
+            for (let { from, to } of update.view.visibleRanges) {
+                console.log(`from ${from} to ${to}`)
+                let substring = update.view.state.doc.sliceString(from, to)
 
-            if (!this.updated) {
+                let start = substring.indexOf("$MEDIA");
+                if (start >= 0) {
 
-                update.view.dispatch({
-                    changes: {
-                        from: 0,
-                        to: currentDoc.length - 1,
-                        insert: currentDoc.replaceAll("dbg", "tada")
-                    }
-                });
-                console.log("replace ChangeSpec dispatched")
-                this.updated = true;
+                    let deco = Decoration.replace({
+                        widget: new VarWidget("mangoooooooo")
+                    })
+                    widgets.push(deco.range(from + start, from + start + 6))
+                }
             }
+            this.decorations = Decoration.set(widgets);
         }
 
         destroy() {

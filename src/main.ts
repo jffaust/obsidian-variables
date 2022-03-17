@@ -1,7 +1,5 @@
 import { activeVisualLine } from './LivePreviewExtension';
 import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import { EditorView } from '@codemirror/view';
-import { ChangeSpec } from '@codemirror/state';
 
 interface VarConfig {
 	vaultPath: string;
@@ -41,25 +39,9 @@ export default class VariablesPlugin extends Plugin {
 			}
 		});
 
-		console.log("onload fdsfd test");
+		console.log("onload");
 
-		//this.registerEditorExtension(activeVisualLine);
-
-		this.registerEditorExtension(EditorView.updateListener.of((viewUpdate) => {
-			if (viewUpdate.docChanged) {
-				let oldContents = viewUpdate.state.doc.toString();
-				let matches = oldContents.matchAll(/ABCDEF/g);
-				let changes: ChangeSpec[] = [];
-				for (let match of matches) {
-					changes.push({ from: match.index, to: match.index + match[0].length, insert: "bcde" });
-				}
-				if (changes.length > 0) {
-					viewUpdate.view.dispatch({
-						changes: changes,
-					});
-				}
-			}
-		}));
+		this.registerEditorExtension(activeVisualLine);
 
 		this.addSettingTab(new VariablesSettingTab(this.app, this));
 	}
