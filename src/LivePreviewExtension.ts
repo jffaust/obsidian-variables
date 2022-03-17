@@ -1,4 +1,5 @@
-import { DecorationSet, EditorView, ViewPlugin, ViewUpdate } from "@codemirror/view";
+import { RangeSetBuilder } from "@codemirror/rangeset";
+import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 //import { Facet, Extension } from "@codemirror/state"
 //import { RangeSetBuilder } from "@codemirror/rangeset"
 
@@ -62,66 +63,54 @@ import { DecorationSet, EditorView, ViewPlugin, ViewUpdate } from "@codemirror/v
 //     decorations: v => v.decorations
 // });
 
+// class VarWidget extends WidgetType {
+//     constructor(readonly value: string) { super() }
+
+//     eq(other: VarWidget) { return other.value == this.value }
+
+//     toDOM() {
+//         let wrap = document.createTextNode("test");
+//         wrap.setAttribute("aria-hidden", "true")
+//         wrap.className = "cm-boolean-toggle"
+//         let box = wrap.appendChild(document.createElement("input"))
+//         box.type = "checkbox"
+//         box.checked = this.checked
+//         return wrap
+//     }
+
+//     ignoreEvent() { return false }
+// }
+
 export const activeVisualLine = ViewPlugin.fromClass(
     class {
-        decorations: DecorationSet;
-        observer: MutationObserver;
-        highlightLayerEl: HTMLElement;
+        decorations: DecorationSet = new RangeSetBuilder<Decoration>().finish();
+        updated: boolean = false;
 
         constructor(view: EditorView) {
-            this.createObserver(view);
-        }
 
-        createObserver(view: EditorView) {
-            const config = { attributes: true, childList: true, subtree: true },
-                selectionLayer = view.dom.querySelector(".cm-selectionLayer"),
-                cursorLayer = view.dom.querySelector(".cm-cursorLayer"),
-                contentDOM = view.dom;
-            if (!selectionLayer || !cursorLayer) return;
-            document.body.addClass("active-visual-line");
-            this.highlightLayerEl = view.scrollDOM.createDiv("cm-highlightLayer");
-            this.highlightLayerEl.ariaHidden = "true";
-            const visualLineEl = this.highlightLayerEl.createDiv("cm-active-visual-line");
-            let scrollBarProps = getComputedStyle(view.dom, "::-webkit-scrollbar");
-            let scrollBarsEnabled = scrollBarProps.getPropertyValue("display");
-            let scrollbarWidth = scrollBarsEnabled === "none" ? 0 : parseInt(scrollBarProps.getPropertyValue("width"));
-            console.log("scr", scrollbarWidth);
-            this.observer = new MutationObserver((mutationsList, observer) => {
-                mutationsList.forEach(mutation => {
-                    let height: number, top: number;
-                    if (mutation.type === "childList") {
-                        let cursorEl = Array.from(mutation.addedNodes).find(
-                            el => el instanceof HTMLElement && el.hasClass("cm-cursor-primary")
-                        ) as HTMLElement;
-                        if (cursorEl) {
-                            height = parseInt(cursorEl.style.height);
-                            top = parseInt(cursorEl.style.top);
-                        }
-                    } else if (mutation.target instanceof HTMLElement && mutation.target.hasClass("cm-cursor-primary")) {
-                        height = parseInt(mutation.target.style.height);
-                        top = parseInt(mutation.target.style.top);
-                    }
-                    if (height && top) {
-                        let left = contentDOM.offsetLeft,
-                            width = contentDOM.offsetWidth - scrollbarWidth;
-                        visualLineEl.setAttribute(
-                            "style",
-                            `height: ${height + 6}px; top: ${top - 2}px; left: ${left}px; width: ${width}px;`
-                        );
-                    }
-                });
-            });
-            this.observer.observe(cursorLayer, config);
         }
 
         update(update: ViewUpdate) {
-            if (!this.observer) this.createObserver(update.view);
+            console.log("update()")
+
+            let currentDoc = update.view.state.doc.toString();
+
+            if (!this.updated) {
+
+                update.view.dispatch({
+                    changes: {
+                        from: 0,
+                        to: currentDoc.length - 1,
+                        insert: currentDoc.replaceAll("dbg", "tada")
+                    }
+                });
+                console.log("replace ChangeSpec dispatched")
+                this.updated = true;
+            }
         }
 
         destroy() {
-            this.observer && this.observer.disconnect();
-            this.highlightLayerEl && this.highlightLayerEl.detach();
-            document.body.removeClass("active-visual-line");
         }
-    }
-);
+    }, {
+    decorations: v => v.decorations
+});
