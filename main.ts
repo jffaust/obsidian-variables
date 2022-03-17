@@ -1,6 +1,4 @@
-import { ViewPlugin } from '@codemirror/view';
-import { LivePreviewExtension } from 'LivePreviewExtension';
-import { App, debounce, FileSystemAdapter, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface VarConfig {
 	vaultPath: string;
@@ -33,7 +31,6 @@ export default class VariablesPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.registerMarkdownPostProcessor((element, context) => {
-			console.log("Running MPP for element:" + element.getText())
 			for (let i = 0; i < this.settings.applicableVarIndexes.length; i++) {
 
 				const variable = this.settings.variables[this.settings.applicableVarIndexes[i]];
@@ -41,7 +38,8 @@ export default class VariablesPlugin extends Plugin {
 			}
 		});
 
-		this.registerEditorExtension(ViewPlugin.fromClass(LivePreviewExtension));
+
+		//this.registerEditorExtension(zebraStripes({ step: 3 }));
 
 		this.addSettingTab(new VariablesSettingTab(this.app, this));
 	}
