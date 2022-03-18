@@ -83,10 +83,10 @@ export const LivePreviewPostProcessor = [baseTheme, ViewPlugin.fromClass(
             //let widgets = [];
             let builder = new RangeSetBuilder<Decoration>()
             for (let { from, to } of getLivePreviewRanges(update.view)) {
-                let fromLine = update.view.state.doc.lineAt(from).number
-                let toLine = update.view.state.doc.lineAt(to).number
-                console.log(`Adding strip from line #${fromLine} to line #${toLine}`)
-                builder.add(fromLine, toLine, stripe);
+                let fromLine = update.view.state.doc.lineAt(from)
+                let toLine = update.view.state.doc.lineAt(to)
+                console.log(`Adding strip from line #${fromLine.number} to line #${toLine.number}`)
+                builder.add(fromLine.from, fromLine.from, stripe);
                 // console.log(`from ${from} to ${to}`)
                 // let substring = update.view.state.doc.sliceString(from, to)
 
