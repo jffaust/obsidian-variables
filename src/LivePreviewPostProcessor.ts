@@ -58,8 +58,8 @@ function getLivePreviewRanges(view: EditorView) {
 }
 
 const baseTheme = EditorView.baseTheme({
-    "&light .cm-zebraStripe": { backgroundColor: "#d4fafa" },
-    "&dark .cm-zebraStripe": { backgroundColor: "#1a2727" }
+    "&light .cm-zebraStripe": { backgroundColor: "#53c7c7" },
+    "&dark .cm-zebraStripe": { backgroundColor: "#53c7c7" }
 })
 const stripe = Decoration.line({
     attributes: { class: "cm-zebraStripe" }

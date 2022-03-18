@@ -39,7 +39,10 @@ export default class VariablesPlugin extends Plugin {
 			id: 'plugin-vars-manage-variables',
 			name: 'Manage variables',
 			callback: () => {
-				this.settingsTab.display();
+				//@ts-expect-error, not exposed in obsidian.d.ts
+				this.app.setting.open();
+				//@ts-expect-error, not exposed in obsidian.d.ts
+				this.app.setting.openTabById("obsidian-variables");
 			}
 		});
 
