@@ -1,4 +1,4 @@
-import { activeVisualLine } from './LivePreviewExtension';
+import { LivePreviewPostProcessor } from './LivePreviewPostProcessor';
 import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface VarConfig {
@@ -27,9 +27,21 @@ const DEFAULT_SETTINGS: VariablesPluginSettings = {
 
 export default class VariablesPlugin extends Plugin {
 	settings: VariablesPluginSettings;
+	settingsTab: VariablesSettingTab;
 
 	async onload() {
 		await this.loadSettings();
+
+		this.settingsTab = new VariablesSettingTab(this.app, this);
+		this.addSettingTab(this.settingsTab);
+
+		this.addCommand({
+			id: 'plugin-vars-manage-variables',
+			name: 'Manage variables',
+			callback: () => {
+				this.settingsTab.display();
+			}
+		});
 
 		this.registerMarkdownPostProcessor((element, context) => {
 			for (let i = 0; i < this.settings.applicableVarIndexes.length; i++) {
@@ -39,11 +51,7 @@ export default class VariablesPlugin extends Plugin {
 			}
 		});
 
-		console.log("onload");
-
-		this.registerEditorExtension(activeVisualLine);
-
-		this.addSettingTab(new VariablesSettingTab(this.app, this));
+		this.registerEditorExtension(LivePreviewPostProcessor);
 	}
 
 	onunload() {
