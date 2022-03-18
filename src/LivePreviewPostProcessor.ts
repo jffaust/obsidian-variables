@@ -1,5 +1,6 @@
 import { RangeSetBuilder } from "@codemirror/rangeset";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
+import { editorLivePreviewField } from "obsidian";
 
 class VarWidget extends WidgetType {
     constructor(readonly value: string) { super() }
@@ -17,10 +18,7 @@ class VarWidget extends WidgetType {
 
 function getLivePreviewRanges(view: EditorView) {
 
-    console.log(`getLivePreviewRanges() START`)
     let selectedLines = new Set();
-
-    console.log(view.state.selection.ranges);
     for (let { from, to } of view.state.selection.ranges) {
         //algo can likely be improved for large selections
         console.log(`checking selection range: from ${from} to ${to}`)
@@ -30,9 +28,6 @@ function getLivePreviewRanges(view: EditorView) {
             selectedLines.add(line.number);
         }
     }
-
-    console.log(`calculated selected lines:`)
-    console.log(selectedLines);
 
     let livePreviewLines = new Set<number>();
     for (let { from, to } of view.visibleRanges) {
@@ -45,32 +40,27 @@ function getLivePreviewRanges(view: EditorView) {
         }
     }
 
-    console.log(`calculated livepreview lines:`)
-    console.log(livePreviewLines);
-
     let livePreviewRanges = [];
     for (let lineNumber of livePreviewLines) {
         let line = view.state.doc.line(lineNumber)
         livePreviewRanges.push({ from: line.from, to: line.to });
     }
-    console.log(`getLivePreviewRanges() END`)
+
     return livePreviewRanges;
 }
 
-const baseTheme = EditorView.baseTheme({
-    "&light .cm-zebraStripe": { backgroundColor: "#53c7c7" },
-    "&dark .cm-zebraStripe": { backgroundColor: "#53c7c7" }
+const debugTheme = EditorView.baseTheme({
+    "&light .cm-debug": { backgroundColor: "#597f7f" },
+    "&dark .cm-debug": { backgroundColor: "#597f7f" }
 })
-const stripe = Decoration.line({
-    attributes: { class: "cm-zebraStripe" }
+const debugStripe = Decoration.line({
+    attributes: { class: "cm-debug" }
 })
-export const LivePreviewPostProcessor = [baseTheme, ViewPlugin.fromClass(
+export const LivePreviewPostProcessor = [debugTheme, ViewPlugin.fromClass(
     class {
         decorations: DecorationSet = new RangeSetBuilder<Decoration>().finish();
 
-        constructor(view: EditorView) {
-
-        }
+        constructor(view: EditorView) { }
 
         update(update: ViewUpdate) {
             console.log("update()");
@@ -82,42 +72,44 @@ export const LivePreviewPostProcessor = [baseTheme, ViewPlugin.fromClass(
 
             //let widgets = [];
             let builder = new RangeSetBuilder<Decoration>()
-            for (let { from, to } of getLivePreviewRanges(update.view)) {
-                let fromLine = update.view.state.doc.lineAt(from)
-                let toLine = update.view.state.doc.lineAt(to)
-                console.log(`Adding strip from line #${fromLine.number} to line #${toLine.number}`)
-                builder.add(fromLine.from, fromLine.from, stripe);
-                // console.log(`from ${from} to ${to}`)
-                // let substring = update.view.state.doc.sliceString(from, to)
+            if (update.state.field(editorLivePreviewField)) {
+                for (let { from, to } of getLivePreviewRanges(update.view)) {
+                    if (true) {
+                        let fromLine = update.view.state.doc.lineAt(from)
+                        builder.add(fromLine.from, fromLine.from, debugStripe);
+                    }
 
-                // for (let i = 0; i < variables.length; i++) {
-                //     let idx = 0;
-                //     const variable = variables[i];
-                //     console.log(`for var named '${variable.name}'`)
+                    // console.log(`from ${from} to ${to}`)
+                    // let substring = update.view.state.doc.sliceString(from, to)
 
-                //     do {
-                //         idx = substring.indexOf(variable.name, idx);
+                    // for (let i = 0; i < variables.length; i++) {
+                    //     let idx = 0;
+                    //     const variable = variables[i];
+                    //     console.log(`for var named '${variable.name}'`)
 
-                //         if (idx >= 0) {
-                //             let deco = Decoration.replace({
-                //                 widget: new VarWidget(variable.value)
-                //             });
+                    //     do {
+                    //         idx = substring.indexOf(variable.name, idx);
 
-                //             let start = from + idx;
-                //             let end = start + variable.value.length
-                //             widgets.push(deco.range(start, end));
+                    //         if (idx >= 0) {
+                    //             let deco = Decoration.replace({
+                    //                 widget: new VarWidget(variable.value)
+                    //             });
 
-                //             idx += variable.name.length + 1;
-                //         }
-                //     } while (idx > 0);
-                // }
+                    //             let start = from + idx;
+                    //             let end = start + variable.value.length
+                    //             widgets.push(deco.range(start, end));
+
+                    //             idx += variable.name.length + 1;
+                    //         }
+                    //     } while (idx > 0);
+                    // }
+                }
             }
             //this.decorations = Decoration.set(widgets);
             this.decorations = builder.finish();
         }
 
-        destroy() {
-        }
+        destroy() { }
     }, {
     decorations: v => v.decorations
 })];
