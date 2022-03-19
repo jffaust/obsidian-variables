@@ -24,5 +24,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[0.2.0]: https://github.com/markdown-it/markdown-it/compare/0.2.0...0.1.0
-[0.1.0]: https://github.com/markdown-it/markdown-it/releases/tag/0.1.0
+[0.2.0]: https://github.com/jffaust/obsidian-variables/compare/0.2.0...0.1.0
+[0.1.0]: https://github.com/jffaust/obsidian-variables/releases/tag/0.1.0
