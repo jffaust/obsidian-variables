@@ -31,7 +31,6 @@ class LivePreviewPostProcessor implements PluginValue {
                     const varIndex = this.obsPlugin.settings.applicableVarIndexes[i];
                     const variable = this.obsPlugin.settings.variables[varIndex];
 
-
                     do {
                         //could potentially use MatchDecorator to support regular expressions
                         //https://codemirror.net/6/docs/ref/#view.MatchDecorator
@@ -62,6 +61,8 @@ class VarWidget extends WidgetType {
 
     eq(other: VarWidget) { return other.value == this.value }
 
+    // Ideally we can output a simple string but in the meantime, we use a span
+    // https://discuss.codemirror.net/t/can-a-replacing-decoration-generate-a-string-instead-of-an-htmlelement/4146
     toDOM() {
         let wrap = document.createElement("span");
         wrap.innerHTML = this.value;

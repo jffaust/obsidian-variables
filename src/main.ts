@@ -5,13 +5,11 @@ import { DEFAULT_SETTINGS, VariablesPluginSettings } from './settings';
 
 export default class VariablesPlugin extends Plugin {
 	settings: VariablesPluginSettings;
-	settingsTab: VariablesSettingTab;
 
 	async onload() {
 		await this.loadSettings();
 
-		this.settingsTab = new VariablesSettingTab(this.app, this);
-		this.addSettingTab(this.settingsTab);
+		this.addSettingTab(new VariablesSettingTab(this.app, this));
 
 		this.addCommand({
 			id: 'plugin-vars-manage-variables',
@@ -79,7 +77,7 @@ class VariablesSettingTab extends PluginSettingTab {
 				.setTooltip("Open documentation on GitHub")
 				.setIcon("help")
 				.onClick(() => {
-					window.open("https://github.com/jffaust/obsidian-variables", '_blank');
+					window.open("https://github.com/jffaust/obsidian-variables/docs/documentation.md", '_blank');
 				})
 			)
 			.addButton(btn => btn

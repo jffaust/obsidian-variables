@@ -24,20 +24,3 @@ div.setting-item.plugin-vars-list div.setting-item-info {
 div.setting-item.plugin-vars-list div.setting-item-control input {
     flex: 1 1 auto;
 }
-
-:root {
-    --active-line-bg: rgba(114, 212, 204, 0.15); /* 🏴‍☠️ */
-  }
-  
-  .cm-highlightLayer {
-    z-index: 10;
-    contain: size style;
-    pointer-events: none;
-  }
-  
-  .cm-active-visual-line {
-    background-color: var(--active-line-bg);
-    padding: 2px 0; /* padding is not easily changed since the top and height of the highlight are programatically derived */
-    position: absolute !important; /* everything breaks if this isn't absolute */
-  }
-  
