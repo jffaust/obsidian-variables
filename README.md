@@ -7,7 +7,7 @@ This plugin for [Obsidian](https://obsidian.md/) adds support for environment va
 ## Documentation
 
 - Check out the [full documentation](docs/full.md)
-- Check out the [changelog](docs/changelog.md)
+- Check out the [changelog](docs/CHANGELOG.md)
 
 ## Installation
 
