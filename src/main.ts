@@ -1,4 +1,4 @@
-import { LivePreviewPostProcessor } from './LivePreviewPostProcessor';
+import { livePreviewPostProcessorPlugin } from './LivePreviewPostProcessor';
 import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface VarConfig {
@@ -54,7 +54,7 @@ export default class VariablesPlugin extends Plugin {
 			}
 		});
 
-		this.registerEditorExtension(LivePreviewPostProcessor);
+		this.registerEditorExtension(livePreviewPostProcessorPlugin(this));
 	}
 
 	onunload() {
