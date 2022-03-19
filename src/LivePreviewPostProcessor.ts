@@ -21,9 +21,7 @@ function getLivePreviewRanges(view: EditorView) {
     let selectedLines = new Set();
     for (let { from, to } of view.state.selection.ranges) {
         //algo can likely be improved for large selections
-        console.log(`checking selection range: from ${from} to ${to}`)
         for (let pos = from; pos <= to; pos++) {
-            console.log(`checking pos: ${pos}`)
             let line = view.state.doc.lineAt(pos);
             selectedLines.add(line.number);
         }
@@ -56,6 +54,7 @@ const debugTheme = EditorView.baseTheme({
 const debugStripe = Decoration.line({
     attributes: { class: "cm-debug" }
 })
+
 export const LivePreviewPostProcessor = [debugTheme, ViewPlugin.fromClass(
     class {
         decorations: DecorationSet = new RangeSetBuilder<Decoration>().finish();
@@ -66,8 +65,8 @@ export const LivePreviewPostProcessor = [debugTheme, ViewPlugin.fromClass(
             console.log("update()");
 
             let variables = [{
-                name: "$test",
-                value: "Long text expansion"
+                name: "$var",
+                value: "replacement"
             }];
 
             //let widgets = [];
@@ -79,30 +78,36 @@ export const LivePreviewPostProcessor = [debugTheme, ViewPlugin.fromClass(
                         builder.add(fromLine.from, fromLine.from, debugStripe);
                     }
 
-                    // console.log(`from ${from} to ${to}`)
-                    // let substring = update.view.state.doc.sliceString(from, to)
 
-                    // for (let i = 0; i < variables.length; i++) {
-                    //     let idx = 0;
-                    //     const variable = variables[i];
-                    //     console.log(`for var named '${variable.name}'`)
+                    let substring = update.view.state.doc.sliceString(from, to)
+                    if (!substring) continue;
 
-                    //     do {
-                    //         idx = substring.indexOf(variable.name, idx);
+                    console.log(`${from}[${substring}]${to}`)
 
-                    //         if (idx >= 0) {
-                    //             let deco = Decoration.replace({
-                    //                 widget: new VarWidget(variable.value)
-                    //             });
+                    for (let i = 0; i < variables.length; i++) {
+                        let idx = 0;
+                        const variable = variables[i];
 
-                    //             let start = from + idx;
-                    //             let end = start + variable.value.length
-                    //             widgets.push(deco.range(start, end));
+                        do {
+                            //could potentially use MatchDecorator to support regular expressions
+                            //https://codemirror.net/6/docs/ref/#view.MatchDecorator
+                            idx = substring.indexOf(variable.name, idx);
 
-                    //             idx += variable.name.length + 1;
-                    //         }
-                    //     } while (idx > 0);
-                    // }
+                            if (idx >= 0) {
+                                let start = from + idx;
+                                let end = start + variable.name.length;
+
+                                console.log(`matched '${variable.name}' at [${start}->${end}]`)
+                                let deco = Decoration.replace({
+                                    widget: new VarWidget(variable.value)
+                                });
+
+                                builder.add(start, end, deco);
+
+                                idx += variable.name.length + 1;
+                            }
+                        } while (idx > 0);
+                    }
                 }
             }
             //this.decorations = Decoration.set(widgets);
