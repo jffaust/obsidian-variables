@@ -1,28 +1,7 @@
-import { App, debounce, FileSystemAdapter, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
-interface VarConfig {
-	vaultPath: string;
-	name: string;
-	value: string;
-}
-
-interface VariablesPluginSettings {
-	filter: string;
-	variables: VarConfig[];
-	showApplicableVars: boolean;
-	applicableVarIndexes: number[];
-}
-
-const DEFAULT_SETTINGS: VariablesPluginSettings = {
-	filter: "",
-	variables: [{
-		vaultPath: "*",
-		name: "demo",
-		value: "swapped"
-	}],
-	showApplicableVars: false,
-	applicableVarIndexes: [0]
-}
+import { livePreviewPostProcessorPlugin } from './livePreviewPostProcessor';
+import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { getVaultAbsolutePath } from './utils';
+import { DEFAULT_SETTINGS, VariablesPluginSettings } from './settings';
 
 export default class VariablesPlugin extends Plugin {
 	settings: VariablesPluginSettings;
@@ -30,8 +9,20 @@ export default class VariablesPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		this.addSettingTab(new VariablesSettingTab(this.app, this));
+
+		this.addCommand({
+			id: 'plugin-vars-manage-variables',
+			name: 'Manage variables',
+			callback: () => {
+				//@ts-expect-error, not exposed in obsidian.d.ts
+				this.app.setting.open();
+				//@ts-expect-error, not exposed in obsidian.d.ts
+				this.app.setting.openTabById("obsidian-variables");
+			}
+		});
+
 		this.registerMarkdownPostProcessor((element, context) => {
-			console.log("Running MPP for element:" + element.getText())
 			for (let i = 0; i < this.settings.applicableVarIndexes.length; i++) {
 
 				const variable = this.settings.variables[this.settings.applicableVarIndexes[i]];
@@ -39,7 +30,7 @@ export default class VariablesPlugin extends Plugin {
 			}
 		});
 
-		this.addSettingTab(new VariablesSettingTab(this.app, this));
+		this.registerEditorExtension(livePreviewPostProcessorPlugin(this));
 	}
 
 	onunload() {
@@ -53,10 +44,6 @@ export default class VariablesPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
-}
-
-function getVaultAbsolutePath(app: App) {
-	return (this.app.vault.adapter as any).basePath;
 }
 
 class VariablesSettingTab extends PluginSettingTab {
@@ -90,7 +77,7 @@ class VariablesSettingTab extends PluginSettingTab {
 				.setTooltip("Open documentation on GitHub")
 				.setIcon("help")
 				.onClick(() => {
-					window.open("https://github.com/jffaust/obsidian-variables", '_blank');
+					window.open("https://github.com/jffaust/obsidian-variables/docs/documentation.md", '_blank');
 				})
 			)
 			.addButton(btn => btn
@@ -191,5 +178,17 @@ class VariablesSettingTab extends PluginSettingTab {
 		}
 
 		this.plugin.settings.applicableVarIndexes = Object.values(newIndexesMap);
+
+		let debugMode = false;
+		for (let i = 0; i < this.plugin.settings.applicableVarIndexes.length; i++) {
+
+			const varIndex = this.plugin.settings.applicableVarIndexes[i];
+			const variable = this.plugin.settings.variables[varIndex];
+			if (variable.name == "$DEBUG" && variable.value == "true") {
+				debugMode = true;
+			}
+		}
+
+		this.plugin.settings.debugMode = debugMode;
 	}
 }
