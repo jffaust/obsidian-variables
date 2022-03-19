@@ -77,12 +77,10 @@ class LivePreviewPostProcessor implements PluginValue {
     update(update: ViewUpdate) {
         console.log("update()");
 
-        const debug = this.isDebug();
         let builder = new RangeSetBuilder<Decoration>();
-
         if (update.state.field(editorLivePreviewField)) {
             for (let { from, to } of getLivePreviewRanges(update.view)) {
-                if (debug) {
+                if (this.obsPlugin.debugMode) {
                     let fromLine = update.view.state.doc.lineAt(from)
                     builder.add(fromLine.from, fromLine.from, debugStripe);
                 }
@@ -122,18 +120,5 @@ class LivePreviewPostProcessor implements PluginValue {
             }
         }
         this.decorations = builder.finish();
-    }
-
-    isDebug() {
-        for (let i = 0; i < this.obsPlugin.settings.applicableVarIndexes.length; i++) {
-
-            const varIndex = this.obsPlugin.settings.applicableVarIndexes[i];
-            const variable = this.obsPlugin.settings.variables[varIndex];
-            if (variable.name == "$DEBUG" && variable.value == "true") {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -28,6 +28,7 @@ const DEFAULT_SETTINGS: VariablesPluginSettings = {
 export default class VariablesPlugin extends Plugin {
 	settings: VariablesPluginSettings;
 	settingsTab: VariablesSettingTab;
+	debugMode: boolean;
 
 	async onload() {
 		await this.loadSettings();
@@ -206,5 +207,17 @@ class VariablesSettingTab extends PluginSettingTab {
 		}
 
 		this.plugin.settings.applicableVarIndexes = Object.values(newIndexesMap);
+
+		let debugMode = false;
+		for (let i = 0; i < this.plugin.settings.applicableVarIndexes.length; i++) {
+
+			const varIndex = this.plugin.settings.applicableVarIndexes[i];
+			const variable = this.plugin.settings.variables[varIndex];
+			if (variable.name == "$DEBUG" && variable.value == "true") {
+				debugMode = true;
+			}
+		}
+
+		this.plugin.debugMode = debugMode;
 	}
 }
