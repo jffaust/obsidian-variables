@@ -14,8 +14,6 @@ class LivePreviewPostProcessor implements PluginValue {
     }
 
     update(update: ViewUpdate) {
-        console.log("update()");
-
         let builder = new RangeSetBuilder<Decoration>();
         if (update.state.field(editorLivePreviewField)) {
             for (let { from, to } of getLivePreviewRanges(update.view)) {
@@ -26,8 +24,6 @@ class LivePreviewPostProcessor implements PluginValue {
 
                 let substring = update.view.state.doc.sliceString(from, to)
                 if (!substring) continue;
-
-                console.log(`${from}[${substring}]${to}`)
 
                 for (let i = 0; i < this.obsPlugin.settings.applicableVarIndexes.length; i++) {
 
@@ -45,7 +41,6 @@ class LivePreviewPostProcessor implements PluginValue {
                             let start = from + idx;
                             let end = start + variable.name.length;
 
-                            console.log(`matched '${variable.name}' at [${start}->${end}]`)
                             let deco = Decoration.replace({
                                 widget: new VarWidget(variable.value)
                             });
