@@ -1,34 +1,11 @@
-import { livePreviewPostProcessorPlugin } from './LivePreviewPostProcessor';
+import { livePreviewPostProcessorPlugin } from './livePreviewPostProcessor';
 import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
-interface VarConfig {
-	vaultPath: string;
-	name: string;
-	value: string;
-}
-
-interface VariablesPluginSettings {
-	filter: string;
-	variables: VarConfig[];
-	showApplicableVars: boolean;
-	applicableVarIndexes: number[];
-}
-
-const DEFAULT_SETTINGS: VariablesPluginSettings = {
-	filter: "",
-	variables: [{
-		vaultPath: "*",
-		name: "demo",
-		value: "swapped"
-	}],
-	showApplicableVars: false,
-	applicableVarIndexes: [0]
-}
+import { getVaultAbsolutePath } from './utils';
+import { DEFAULT_SETTINGS, VariablesPluginSettings } from './settings';
 
 export default class VariablesPlugin extends Plugin {
 	settings: VariablesPluginSettings;
 	settingsTab: VariablesSettingTab;
-	debugMode: boolean;
 
 	async onload() {
 		await this.loadSettings();
@@ -69,10 +46,6 @@ export default class VariablesPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
-}
-
-function getVaultAbsolutePath(app: App) {
-	return (this.app.vault.adapter as any).basePath;
 }
 
 class VariablesSettingTab extends PluginSettingTab {
@@ -218,6 +191,6 @@ class VariablesSettingTab extends PluginSettingTab {
 			}
 		}
 
-		this.plugin.debugMode = debugMode;
+		this.plugin.settings.debugMode = debugMode;
 	}
 }
