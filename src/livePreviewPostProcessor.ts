@@ -1,13 +1,14 @@
 import { RangeSetBuilder } from "@codemirror/rangeset";
 import { Compartment, Extension } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, PluginValue, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
-import { editorLivePreviewField } from "obsidian";
+import { debounce, editorLivePreviewField } from "obsidian";
 import VariablesPlugin from "./main";
 import { getLivePreviewRanges } from "./utils";
 
 class LivePreviewPostProcessor implements PluginValue {
     obsPlugin: VariablesPlugin;
     decorations: DecorationSet = new RangeSetBuilder<Decoration>().finish();
+    debouncedRefresh = debounce(this.applyPostProcessing, 1000, true);
 
     constructor(view: EditorView, plugin: VariablesPlugin) {
         this.obsPlugin = plugin;
@@ -17,42 +18,30 @@ class LivePreviewPostProcessor implements PluginValue {
         let builder = new RangeSetBuilder<Decoration>();
         if (update.state.field(editorLivePreviewField)) {
             for (let { from, to } of getLivePreviewRanges(update.view)) {
+
+                let fromLine = update.view.state.doc.lineAt(from)
                 if (this.obsPlugin.settings.debugMode) {
-                    let fromLine = update.view.state.doc.lineAt(from)
-                    builder.add(fromLine.from, fromLine.from, debugStripe);
+                    builder.add(fromLine.from, fromLine.from, debugLineDeco);
                 }
-
-                let substring = update.view.state.doc.sliceString(from, to)
-                if (!substring) continue;
-
-                for (let i = 0; i < this.obsPlugin.settings.applicableVarIndexes.length; i++) {
-
-                    let idx = 0;
-                    const varIndex = this.obsPlugin.settings.applicableVarIndexes[i];
-                    const variable = this.obsPlugin.settings.variables[varIndex];
-
-                    do {
-                        //could potentially use MatchDecorator to support regular expressions
-                        //https://codemirror.net/6/docs/ref/#view.MatchDecorator
-                        idx = substring.indexOf(variable.name, idx);
-
-                        if (idx >= 0) {
-                            let start = from + idx;
-                            let end = start + variable.name.length;
-
-                            let deco = Decoration.replace({
-                                widget: new VarWidget(variable.value)
-                            });
-
-                            builder.add(start, end, deco);
-
-                            idx += variable.name.length + 1;
-                        }
-                    } while (idx > 0);
-                }
+                builder.add(fromLine.from, fromLine.from, livePreviewLineDeco);
             }
+
+            this.debouncedRefresh();
         }
         this.decorations = builder.finish();
+    }
+
+    applyPostProcessing() {
+        // console.log(`[${new Date().toISOString()}] Applying post processing`);
+        // let lpLineDivs = document.querySelectorAll("div.plugin-vars-live-preview");
+        // for (let i = 0; i < this.obsPlugin.settings.applicableVarIndexes.length; i++) {
+        //     const variable = this.obsPlugin.settings.variables[this.obsPlugin.settings.applicableVarIndexes[i]];
+
+        //     lpLineDivs.forEach((v, k, p) => {
+        //         console.log(v.innerHTML)
+        //         v.innerHTML = v.innerHTML.replaceAll(variable.name, variable.value);
+        //     });
+        // }
     }
 }
 
@@ -76,8 +65,12 @@ const debugTheme = EditorView.baseTheme({
     "&light .cm-debug": { backgroundColor: "#597f7f" },
     "&dark .cm-debug": { backgroundColor: "#597f7f" }
 });
-const debugStripe = Decoration.line({
+const debugLineDeco = Decoration.line({
     attributes: { class: "cm-debug" }
+});
+
+const livePreviewLineDeco = Decoration.line({
+    attributes: { class: "plugin-vars-live-preview" }
 });
 
 export function livePreviewPostProcessorPlugin(plugin: VariablesPlugin): Extension {
