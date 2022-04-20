@@ -8,7 +8,8 @@
 
 ## Managing Variables
 - **Vault path**: This is the absolute path of a vault. You can specify the `*` character so that the variable applies to any vault. You can validate which variables apply to the current vault with the toggle button (see demo below). You can also use the `Copy current vault path` button to facilitate configuring a variable for the current vault.
-- **Variable name** & **variable value**: any string you want. The code does a simple string substitution for all occurrences found.
+- **Variable name** any string you want. The code will look for occurrences of this string and replace it with the corresponding value.
+- **variable value**: any string you want but the code will perform HTML sanitization on the value provided before inserting it into the DOM.
 
 Here's a demo showcasing how to add a variable validate which variables apply to the current vault, filter variables, and delete a variable:
 ![demo](/res/manage-variables-demo.gif)
