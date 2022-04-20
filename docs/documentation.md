@@ -11,4 +11,4 @@
 - **Variable name** & **variable value**: any string you want. The code does a simple string substitution for all occurrences found.
 
 Here's a demo showcasing how to add a variable validate which variables apply to the current vault, filter variables, and delete a variable:
-![demo](/res/obs-vars-demo.gif)
+![demo](/res/manage-variables-demo.gif)

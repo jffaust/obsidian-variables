@@ -2,7 +2,7 @@
 
 This is a plugin for [Obsidian.md](https://obsidian.md/) that adds the ability to configure variables per vault, similar to traditional environment variables. The variables get replaced during [Markdown post-processing](https://marcus.se.net/obsidian-plugin-docs/guides/markdown-post-processing) so they can change the final HTML output. This can be used to keep absolute file paths generic and re-usable across multiple devices, as seen in the demo below: 
 
-![demo](./res/obs-vars-highlight.gif)
+![demo](./res/highlight.gif)
 
 > Does not work with Live Preview. See this [issue](https://github.com/jffaust/obsidian-variables/issues/4) for more info.
 
