@@ -2,6 +2,7 @@ import { livePreviewPostProcessorPlugin } from './livePreviewPostProcessor';
 import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { getVaultAbsolutePath } from './utils';
 import { DEFAULT_SETTINGS, VariablesPluginSettings } from './settings';
+import * as DOMPurify from 'dompurify';
 
 export default class VariablesPlugin extends Plugin {
 	settings: VariablesPluginSettings;
@@ -26,11 +27,18 @@ export default class VariablesPlugin extends Plugin {
 			for (let i = 0; i < this.settings.applicableVarIndexes.length; i++) {
 
 				const variable = this.settings.variables[this.settings.applicableVarIndexes[i]];
-				element.innerHTML = element.innerHTML.replaceAll(variable.name, variable.value);
+				// We need to be able to edit HTML attributes so element.textContent is not an option
+				// For example: <video src="file:///$MEDIA/2022/VID_20220324_142316571.mp4" controls></video>
+				// becomes: <video src="file:////home/jffaust/gdrive/Media/2022/VID_20220324_142316571.mp4" controls></video>
+
+				// Since we're changing the DOM directly, we need to sanitize:
+				var cleanedValue = DOMPurify.sanitize(variable.value);
+				element.innerHTML = element.innerHTML.replaceAll(variable.name, cleanedValue);
 			}
 		});
 
-		this.registerEditorExtension(livePreviewPostProcessorPlugin(this));
+		// https://github.com/jffaust/obsidian-variables/issues/4
+		//this.registerEditorExtension(livePreviewPostProcessorPlugin(this));
 	}
 
 	onunload() {
@@ -77,7 +85,7 @@ class VariablesSettingTab extends PluginSettingTab {
 				.setTooltip("Open documentation on GitHub")
 				.setIcon("help")
 				.onClick(() => {
-					window.open("https://github.com/jffaust/obsidian-variables/docs/documentation.md", '_blank');
+					window.open("https://github.com/jffaust/obsidian-variables/", '_blank');
 				})
 			)
 			.addButton(btn => btn
@@ -111,7 +119,7 @@ class VariablesSettingTab extends PluginSettingTab {
 		for (let i = 0; i < this.plugin.settings.variables.length; i++) {
 			const variable = this.plugin.settings.variables[i];
 
-			if (this.plugin.settings.filter && !variable.name.includes(this.plugin.settings.filter)) {
+			if (this.plugin.settings.filter && !variable.name.toLowerCase().includes(this.plugin.settings.filter.toLowerCase())) {
 				continue;
 			}
 

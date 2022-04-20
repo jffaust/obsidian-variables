@@ -2,7 +2,7 @@ import { EditorView } from "@codemirror/view";
 import { App } from "obsidian";
 
 export function getVaultAbsolutePath(app: App) {
-    return (this.app.vault.adapter as any).basePath;
+    return (app.vault.adapter as any).basePath;
 }
 
 export function getLivePreviewRanges(view: EditorView) {

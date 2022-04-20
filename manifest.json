@@ -1,9 +1,9 @@
 {
 	"id": "obsidian-variables",
 	"name": "Variables",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"minAppVersion": "0.13.4",
-	"description": "Plugin that adds support for variables in Obsidian.md",
+	"description": "Plugin that adds support for variables to markdown files in Obsidian.md",
 	"author": "Jean-Frédéric Faust",
 	"authorUrl": "https://github.com/jffaust",
 	"isDesktopOnly": false
