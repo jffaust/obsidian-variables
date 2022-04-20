@@ -30,7 +30,8 @@ export default class VariablesPlugin extends Plugin {
 			}
 		});
 
-		this.registerEditorExtension(livePreviewPostProcessorPlugin(this));
+		// https://github.com/jffaust/obsidian-variables/issues/4
+		//this.registerEditorExtension(livePreviewPostProcessorPlugin(this));
 	}
 
 	onunload() {
@@ -77,7 +78,7 @@ class VariablesSettingTab extends PluginSettingTab {
 				.setTooltip("Open documentation on GitHub")
 				.setIcon("help")
 				.onClick(() => {
-					window.open("https://github.com/jffaust/obsidian-variables/docs/documentation.md", '_blank');
+					window.open("https://github.com/jffaust/obsidian-variables/", '_blank');
 				})
 			)
 			.addButton(btn => btn
@@ -111,7 +112,7 @@ class VariablesSettingTab extends PluginSettingTab {
 		for (let i = 0; i < this.plugin.settings.variables.length; i++) {
 			const variable = this.plugin.settings.variables[i];
 
-			if (this.plugin.settings.filter && !variable.name.includes(this.plugin.settings.filter)) {
+			if (this.plugin.settings.filter && !variable.name.toLowerCase().includes(this.plugin.settings.filter.toLowerCase())) {
 				continue;
 			}
 

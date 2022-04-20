@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-variables",
-	"version": "0.2.0",
-	"description": "Plugin that adds support for variables in Obsidian.md",
+	"version": "0.3.0",
+	"description": "Plugin that adds support for variables to markdown files in Obsidian.md",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
