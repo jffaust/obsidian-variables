@@ -2,6 +2,7 @@ import { livePreviewPostProcessorPlugin } from './livePreviewPostProcessor';
 import { App, debounce, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { getVaultAbsolutePath } from './utils';
 import { DEFAULT_SETTINGS, VariablesPluginSettings } from './settings';
+import * as DOMPurify from 'dompurify';
 
 export default class VariablesPlugin extends Plugin {
 	settings: VariablesPluginSettings;
@@ -26,7 +27,13 @@ export default class VariablesPlugin extends Plugin {
 			for (let i = 0; i < this.settings.applicableVarIndexes.length; i++) {
 
 				const variable = this.settings.variables[this.settings.applicableVarIndexes[i]];
-				element.innerHTML = element.innerHTML.replaceAll(variable.name, variable.value);
+				// We need to be able to edit HTML attributes so element.textContent is not an option
+				// For example: <video src="file:///$MEDIA/2022/VID_20220324_142316571.mp4" controls></video>
+				// becomes: <video src="file:////home/jffaust/gdrive/Media/2022/VID_20220324_142316571.mp4" controls></video>
+
+				// Since we're changing the DOM directly, we need to sanitize:
+				var cleanedValue = DOMPurify.sanitize(variable.value);
+				element.innerHTML = element.innerHTML.replaceAll(variable.name, cleanedValue);
 			}
 		});
 
