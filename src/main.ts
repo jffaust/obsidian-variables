@@ -35,7 +35,7 @@ export default class VariablesPlugin extends Plugin {
 				var cleanedValue = DOMPurify.sanitize(variable.value);
 				element.innerHTML = element.innerHTML.replaceAll(variable.name, cleanedValue);
 			}
-		});
+		}, -1);
 
 		// https://github.com/jffaust/obsidian-variables/issues/4
 		//this.registerEditorExtension(livePreviewPostProcessorPlugin(this));
